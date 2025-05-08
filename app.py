@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from db_manager import *
+import time
 app = Flask(__name__)
 
 # Sample data (you can replace this with a database)
@@ -20,7 +21,8 @@ def get_item(id):
 def create_item():
     if not request.json:
         return jsonify({'error': 'Invalid request data'}), 400
-    
+    connection = get_db_connection()
+    add_item(request.json.get('name'),request.json.get('description'))
     new_item = {
         'id': len(items) + 1,
         'name': request.json.get('name'),
