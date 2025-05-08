@@ -1,63 +1,72 @@
 from flask import Flask, request, jsonify
 from db_manager import *
-import time
+
 app = Flask(__name__)
 
-# Sample data (you can replace this with a database)
-items = []
+# Initialize database when the app starts
+initialize_db()
 
-@app.route('/api/items', methods=['GET'])
-def get_items():
-    users = []
-    total_users = get_db_size()
-    print(total_users)
-    for i in range(1,total_users+1):
-        user = get_item_from_db_by_id(i)
-        users.append(user)
-    return jsonify(users)
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    try:
+        users = get_all_items_from_db()
+        if not users:
+            return jsonify({'message': 'No users found'}), 404
+        return jsonify(users)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-@app.route('/api/items/<int:id>', methods=['GET'])
-def get_item(id):
-    item = next((item for item in items if item['id'] == id), None)
-    if item is None:
-        return jsonify({'error': 'Item not found'}), 404
-    return jsonify(item)
+@app.route('/api/users/by-name/<string:name>', methods=['GET'])
+def get_user_by_name(name):
+    try:
+        user = get_item_from_db(name)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        return jsonify(user)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-@app.route('/api/items', methods=['POST'])
-def create_item():
+@app.route('/api/users/by-id/<int:id>', methods=['GET'])
+def get_user_by_id(id):
+    try:
+        user = get_item_from_db_by_id(id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        return jsonify(user)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/users', methods=['POST'])
+def create_user():
+    if not request.json or 'name' not in request.json or 'description' not in request.json:
+        return jsonify({'error': 'Invalid request data'}), 400
+    try:
+        new_user = add_item(request.json['name'], request.json['description'])
+        return jsonify(new_user), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/users/<int:id>', methods=['PUT'])
+def update_user(id):
     if not request.json:
         return jsonify({'error': 'Invalid request data'}), 400
-    connection = get_db_connection()
-    add_item(request.json.get('name'),request.json.get('description'))
-    new_item = {
-        'id': len(items) + 1,
-        'name': request.json.get('name'),
-        'description': request.json.get('description')
-    }
-    items.append(new_item)
-    return jsonify(new_item), 201
+    try:
+        updated_user = update_item(id, request.json.get('name'), request.json.get('description'))
+        if not updated_user:
+            return jsonify({'error': 'User not found'}), 404
+        return jsonify(updated_user)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
-@app.route('/api/items/<int:id>', methods=['PUT'])
-def update_item(id):
-    item = next((item for item in items if item['id'] == id), None)
-    if item is None:
-        return jsonify({'error': 'Item not found'}), 404
-    
-    if not request.json:
-        return jsonify({'error': 'Invalid request data'}), 400
-    
-    item['name'] = request.json.get('name', item['name'])
-    item['description'] = request.json.get('description', item['description'])
-    return jsonify(item)
-
-@app.route('/api/items/<int:id>', methods=['DELETE'])
-def delete_item(id):
-    item = next((item for item in items if item['id'] == id), None)
-    if item is None:
-        return jsonify({'error': 'Item not found'}), 404
-    
-    items.remove(item)
-    return jsonify({'message': 'Item deleted successfully'})
+@app.route('/api/users/<int:id>', methods=['DELETE'])
+def delete_user(id):
+    try:
+        success = delete_item_from_db(id)
+        if not success:
+            return jsonify({'error': 'User not found'}), 404
+        return jsonify({'message': 'User deleted successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8009)
