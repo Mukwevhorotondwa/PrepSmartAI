@@ -8,8 +8,13 @@ items = []
 
 @app.route('/api/items', methods=['GET'])
 def get_items():
-    
-    return jsonify(items)
+    users = []
+    total_users = get_db_size()
+    print(total_users)
+    for i in range(1,total_users+1):
+        user = get_item_from_db_by_id(i)
+        users.append(user)
+    return jsonify(users)
 
 @app.route('/api/items/<int:id>', methods=['GET'])
 def get_item(id):
