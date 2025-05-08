@@ -3,5 +3,10 @@ PrepSmartAI is an AI-powered web application designed to help junior developers 
 # HOW TO RUN?
 1. don't have flask installed?
     run: pip3 install flask
-2. run
+2. set-up .env
+    contact @mazebhula for :
+    db endpoint
+    db name
+    credentials
+3. run
     python3 app.py
