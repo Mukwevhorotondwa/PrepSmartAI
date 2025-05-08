@@ -8,6 +8,7 @@ items = []
 
 @app.route('/api/items', methods=['GET'])
 def get_items():
+    
     return jsonify(items)
 
 @app.route('/api/items/<int:id>', methods=['GET'])

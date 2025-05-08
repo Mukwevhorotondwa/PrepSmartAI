@@ -60,8 +60,54 @@ def add_item(name, description):
         return {"error": str(e)}
     finally:
         conn.close()
+def get_db_size():
+    conn = get_db_connection()
+    if not conn:
+        return {"error": "Database connection failed"}
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT COUNT(*) FROM items;
+        """)
+        
+        size = cursor.fetchone()[0]
+    
+        return int(size)
+    except pyodbc.Error as e:
+        return {"error": str(e)}
+    finally:
+        conn.close()
+    
+def get_item_from_db(name):
+    """Retrieve an item from the database by ID"""
+    conn = get_db_connection()
+    if not conn:
+        return {"error": "Database connection failed"}
+    
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, name, description
+            FROM items
+            WHERE name = ?
+        """, (name,))
+        
+        row = cursor.fetchone()
+        if row:
+            return {
+                "id": row[0],
+                "name": row[1],
+                "description": row[2]
+            }
+        return {"error": "Item not found"}
+    
+    except pyodbc.Error as e:
+        return {"error": str(e)}
+    finally:
+        conn.close()
 
-def get_item(item_id):
+   
+def get_item_from_db_by_id(id):
     """Retrieve an item from the database by ID"""
     conn = get_db_connection()
     if not conn:
@@ -73,7 +119,7 @@ def get_item(item_id):
             SELECT id, name, description
             FROM items
             WHERE id = ?
-        """, (item_id,))
+        """, (id,))
         
         row = cursor.fetchone()
         if row:
@@ -83,7 +129,11 @@ def get_item(item_id):
                 "description": row[2]
             }
         return {"error": "Item not found"}
+    
     except pyodbc.Error as e:
         return {"error": str(e)}
     finally:
         conn.close()
+
+if __name__ == '__main__':
+    print()
