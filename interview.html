@@ -14,9 +14,100 @@
       <p>How can I help you today?</p>
     </div>
     <div class="user_input">
-      <input type="text" placeholder="Let's Prepare" />
-        <button>Ask</button>
+      <input type="text" id="questionInput" placeholder="Let's Prepare" />
+      <button onclick="askQuestion()">Ask</button>
     </div>
+    <div id="response" class="response"></div>
   </div>
+
+  <script>
+    async function askQuestion() {
+      const questionInput = document.getElementById('questionInput');
+      const responseDiv = document.getElementById('response');
+      const question = questionInput.value.trim();
+
+      if (!question) {
+        alert('Please enter a question');
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:5034/api/prepsmart', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            question: question,
+            context: "You are a helpful AI assistant for interview preparation. You should provide detailed answers to help prepare for interviews."
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          responseDiv.innerHTML = `<p class="error">${data.error}</p>`;
+        } else {
+          responseDiv.innerHTML = `
+            <div class="qa-container">
+              <div class="qa-item">
+                <p class="question"><strong>Question:</strong> ${data.question}</p>
+                <p class="answer"><strong>Answer:</strong> ${data.answer}</p>
+                <p class="confidence">Confidence Score: ${Math.round(data.score * 100)}%</p>
+              </div>
+            </div>
+          `;
+        }
+      } catch (error) {
+        responseDiv.innerHTML = `<p class="error">Error: Could not connect to the server</p>`;
+      }
+
+      questionInput.value = '';
+    }
+
+    // Allow Enter key to submit
+    document.getElementById('questionInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        askQuestion();
+      }
+    });
+  </script>
+
+  <style>
+    .response {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #3a3a3a;
+      border-radius: 8px;
+      text-align: left;
+      color: #ffffff;
+    }
+    .error {
+      color: #ff6b6b;
+    }
+    .qa-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .qa-item {
+      background-color: #2a2a2a;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    .question {
+      color: #4a9eff;
+      margin-bottom: 10px;
+    }
+    .answer {
+      color: #ffffff;
+      margin-bottom: 10px;
+      white-space: pre-wrap;
+    }
+    .confidence {
+      color: #8a8a8a;
+      font-size: 0.9em;
+    }
+  </style>
 </body>
 </html>
