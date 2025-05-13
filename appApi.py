@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import requests
 import os
 from dotenv import load_dotenv
@@ -7,10 +8,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Hugging Face API configuration
 HF_API_TOKEN = os.getenv("HF_API_TOKEN")
-HF_API_URL = "https://api-inference.huggingface.co/models/distilbert-base-uncased"
+HF_API_URL = "https://api-inference.huggingface.co/models/deepset/roberta-base-squad2"
 HEADERS = {"Authorization": f"Bearer {HF_API_TOKEN}"}
 
 def query_hugging_face(payload):
@@ -66,4 +68,4 @@ def health_check():
     return jsonify({"status": "API is running"}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5034)
