@@ -14,15 +14,8 @@ def create_job_description_payload():
         "job_description": job_info,
         "experience":experience,
         "context":context,
-        "qualification":qualification
-        
-        
+        "qualification":qualification    
     }
-    
-
-
-    
-    
     json_payload = json.dumps(info, indent=2)
     return json_payload
 print(create_job_description_payload())
